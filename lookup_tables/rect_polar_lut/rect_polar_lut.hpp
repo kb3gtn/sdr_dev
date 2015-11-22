@@ -1,15 +1,12 @@
 #ifndef __RECT_POLAR_LUT_HPP
 #define __RECT_POLAR_LUT_HPP
+#define using_cpp
 
 // if using c++ enviroment enable exceptions...
-//class LUT_Exception : public std::exception
-//{
-//    std::string s;
-//public:
-//    LUT_Exception( std::string ss) : s(ss) {}
-//    ~LUT_Exception() throw() {}
-//    const char * what() const throw() { return s.c_str(); }
-//};
+#ifdef using_cpp
+#include <exception>
+class LUT_Exception;
+#endif
 
 
 // data struct for a rect vector in X,Y
@@ -25,17 +22,14 @@ struct polar_vector {
 };
 
 //If using c++, provide stream operator to print rv,pv as text
-//// add method for stream operator to print what a rect_vector is
-//std::ostream& operator <<(std::ostream& os, const rect_vector &v) {
-//    os << "{" << std::setw(4) << (int)v.x << "," << std::setw(4) << (int)v.y << "}";
-//    return os;
-//}
-//
-//// add method for stream operator to print what a polar_vector is
-//std::ostream& operator <<(std::ostream& os, const polar_vector &v) {
-//    os << "{" << std::setw(3) <<  (int)v.mag << "<" << std::setw(3) << (int)v.nra << "}";
-//    return os;
-}
+#ifdef using_cpp
+#include <ostream>
+// add method for stream operator to print what a rect_vector is
+std::ostream& operator <<(std::ostream& os, const rect_vector &v);
+
+// add method for stream operator to print what a polar_vector is
+std::ostream& operator <<(std::ostream& os, const polar_vector &v);
+#endif
 
 
 // Function prototypes for lookup operations

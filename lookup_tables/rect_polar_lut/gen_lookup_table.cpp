@@ -281,7 +281,7 @@ int write_c_file() {
     polar_vector pv;
     rect_vector rv;
     for (x=0; x < 128; x ++ ) {
-        fh << "  {  \\\\ mag,nra for x=" << (int)x << " and y=0:127\n    ";
+        fh << "  {  // mag,nra for x=" << (int)x << " and y=0:127\n    ";
         for (y=0; y < 128; y++ ) {
             pv = rect_2_polar_lut[x][y];
             fh << "{" << std::setw(3) << (int)pv.mag << "," << std::setw(3) << (int)pv.nra << "}";
@@ -306,11 +306,11 @@ int write_c_file() {
     fh << "};\n";
     fh << "\n";
     fh << "/* Lookup table for Polar to Rect Conversions */\n";
-    fh << "struct rect_vector polar_2_rec_lut[181][64] = \n";
+    fh << "struct rect_vector polar_2_rect_lut[181][64] = \n";
     fh << "{ \n";
     int mag,nra;
     for (mag=0; mag < 181; mag ++ ) {
-        fh << "  {  \\\\ x,y for mag=" << (int)mag << " and nra=0:63\n    ";
+        fh << "  {  // x,y for mag=" << (int)mag << " and nra=0:63\n    ";
         for (nra=0; nra < 64; nra++ ) {
             rv = polar_2_rect_lut[mag][nra];
             fh << "{" << std::setw(4) << (int)rv.x << "," << std::setw(4) << (int)rv.y << "}";
@@ -396,6 +396,33 @@ int write_c_file() {
     fh << "    return pv;\n";
     fh << "}\n";
     fh << "\n";
+    fh << "#ifdef using_cpp\n";
+    fh << "#include <ostream>\n";
+    fh << "#include <iomanip>\n";
+    fh << "\n";
+    fh << "// add method for stream operator to print what a rect_vector is\n";
+    fh << "std::ostream& operator <<(std::ostream& os, const rect_vector &v) {\n";
+    fh << "    os << \"{\" << std::setw(4) << (int)v.x << \",\" << std::setw(4) << (int)v.y << \"}\";\n";
+    fh << "    return os;\n";
+    fh << "}\n";
+    fh << "\n";
+    fh << "// add method for stream operator to print what a polar_vector is\n";
+    fh << "std::ostream& operator <<(std::ostream& os, const polar_vector &v) {\n";
+    fh << "    os << \"{\" << std::setw(3) <<  (int)v.mag << \"<\" << std::setw(3) << (int)v.nra << \"}\";\n";
+    fh << "    return os;\n";
+    fh << "}\n";
+    fh << "\n";
+    fh << "class LUT_Exception : public std::exception\n";
+    fh << "{\n";
+    fh << "    std::string s;\n";
+    fh << "public:\n";
+    fh << "    LUT_Exception( std::string ss) : s(ss) {}\n";
+    fh << "    ~LUT_Exception() throw() {}\n";
+    fh << "    const char * what() const throw() { return s.c_str(); }\n";
+    fh << "};\n";
+    fh << "\n";
+    fh << "#endif\n";   
+    fh << "\n";
     fh << "\n";
     fh.close();
     return 0;
@@ -409,16 +436,13 @@ int write_h_file() {
     }
     fh << "#ifndef __RECT_POLAR_LUT_HPP\n";
     fh << "#define __RECT_POLAR_LUT_HPP\n";
+    fh << "#define using_cpp\n";
     fh << "\n";
     fh << "// if using c++ enviroment enable exceptions...\n";
-    fh << "//class LUT_Exception : public std::exception\n";
-    fh << "//{\n";
-    fh << "//    std::string s;\n";
-    fh << "//public:\n";
-    fh << "//    LUT_Exception( std::string ss) : s(ss) {}\n";
-    fh << "//    ~LUT_Exception() throw() {}\n";
-    fh << "//    const char * what() const throw() { return s.c_str(); }\n";
-    fh << "//};\n";
+    fh << "#ifdef using_cpp\n";
+    fh << "#include <exception>\n";
+    fh << "class LUT_Exception;\n";
+    fh << "#endif\n";
     fh << "\n";
     fh << "\n";
     fh << "// data struct for a rect vector in X,Y\n";
@@ -434,17 +458,14 @@ int write_h_file() {
     fh << "};\n";
     fh << "\n";
     fh << "//If using c++, provide stream operator to print rv,pv as text\n";
-    fh << "//// add method for stream operator to print what a rect_vector is\n";
-    fh << "//std::ostream& operator <<(std::ostream& os, const rect_vector &v) {\n";
-    fh << "//    os << \"{\" << std::setw(4) << (int)v.x << \",\" << std::setw(4) << (int)v.y << \"}\";\n";
-    fh << "//    return os;\n";
-    fh << "//}\n";
-    fh << "//\n";
-    fh << "//// add method for stream operator to print what a polar_vector is\n";
-    fh << "//std::ostream& operator <<(std::ostream& os, const polar_vector &v) {\n";
-    fh << "//    os << \"{\" << std::setw(3) <<  (int)v.mag << \"<\" << std::setw(3) << (int)v.nra << \"}\";\n";
-    fh << "//    return os;\n";
-    fh << "}\n";
+    fh << "#ifdef using_cpp\n";
+    fh << "#include <ostream>\n";
+    fh << "// add method for stream operator to print what a rect_vector is\n";
+    fh << "std::ostream& operator <<(std::ostream& os, const rect_vector &v);\n";
+    fh << "\n";
+    fh << "// add method for stream operator to print what a polar_vector is\n";
+    fh << "std::ostream& operator <<(std::ostream& os, const polar_vector &v);\n";
+    fh << "#endif\n";
     fh << "\n";
     fh << "\n";
     fh << "// Function prototypes for lookup operations\n";
